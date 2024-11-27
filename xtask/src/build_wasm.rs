@@ -98,7 +98,8 @@ pub fn run_wasm(args: &BuildWasm) -> Result<()> {
 
     let exported_functions = concat!(
         include_str!("../../lib/src/wasm/stdlib-symbols.txt"),
-        include_str!("../../lib/binding_web/exports.txt")
+        include_str!("../../lib/binding_web/exports.txt"),
+        "tree_sitter_sql",
     )
     .replace('"', "")
     .lines()
@@ -116,13 +117,15 @@ pub fn run_wasm(args: &BuildWasm) -> Result<()> {
         "-s",
         "WASM=1",
         "-s",
+        "STANDALONE_WASM",
+        "-s",
         "INITIAL_MEMORY=33554432",
         "-s",
         "ALLOW_MEMORY_GROWTH=1",
         "-s",
         "SUPPORT_BIG_ENDIAN=1",
-        "-s",
-        "MAIN_MODULE=2",
+        // "-s",
+        // "MAIN_MODULE=2",
         "-s",
         "FILESYSTEM=0",
         "-s",
@@ -135,6 +138,7 @@ pub fn run_wasm(args: &BuildWasm) -> Result<()> {
         exported_runtime_methods,
         "-fno-exceptions",
         "-std=c11",
+        "--no-entry",
         "-D",
         "fprintf(...)=",
         "-D",
@@ -147,18 +151,22 @@ pub fn run_wasm(args: &BuildWasm) -> Result<()> {
         "lib/src",
         "-I",
         "lib/include",
-        "--js-library",
-        "lib/binding_web/imports.js",
-        "--pre-js",
-        "lib/binding_web/prefix.js",
-        "--post-js",
-        "lib/binding_web/binding.js",
-        "--post-js",
-        "lib/binding_web/suffix.js",
+        "-I",
+        "tree-sitter-sql/src",
+        // "--js-library",
+        // "lib/binding_web/imports.js",
+        // "--pre-js",
+        // "lib/binding_web/prefix.js",
+        // "--post-js",
+        // "lib/binding_web/binding.js",
+        // "--post-js",
+        // "lib/binding_web/suffix.js",
         "lib/src/lib.c",
-        "lib/binding_web/binding.c",
+        "tree-sitter-sql/src/scanner.c",
+        "tree-sitter-sql/src/parser.c",
+        // "lib/binding_web/binding.c",
         "-o",
-        "target/scratch/tree-sitter.js",
+        "target/scratch/ts-combined-sql.wasm",
     ]);
 
     bail_on_err(

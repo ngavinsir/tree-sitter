@@ -116,11 +116,6 @@ extern void tree_sitter_parse_callback(
   uint32_t *length_read
 );
 
-extern void tree_sitter_log_callback(
-  bool is_lex_message,
-  const char *message
-);
-
 static const char *call_parse_callback(
   void *payload,
   uint32_t byte,
@@ -142,14 +137,6 @@ static const char *call_parse_callback(
   return buffer;
 }
 
-static void call_log_callback(
-  void *payload,
-  TSLogType log_type,
-  const char *message
-) {
-  tree_sitter_log_callback(log_type == TSLogTypeLex, message);
-}
-
 void ts_parser_new_wasm() {
   TSParser *parser = ts_parser_new();
   char *input_buffer = calloc(INPUT_BUFFER_SIZE, sizeof(char));
@@ -158,7 +145,7 @@ void ts_parser_new_wasm() {
 }
 
 void ts_parser_enable_logger_wasm(TSParser *self, bool should_log) {
-  TSLogger logger = {self, should_log ? call_log_callback : NULL};
+  TSLogger logger = {self, NULL};
   ts_parser_set_logger(self, logger);
 }
 
